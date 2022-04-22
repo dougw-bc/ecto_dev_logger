@@ -60,13 +60,25 @@ defmodule Ecto.DevLogger do
           replace_params(repo_adapter, query, index, replacement)
         end)
 
-      Logger.debug(
-        fn -> log_sql_iodata(query_string, measurements, metadata, color) end,
-        ansi_color: color
-      )
+      to_write = log_sql_iodata(query_string, measurements, metadata, color)
+
+      if to_write do
+        Logger.debug(
+          to_write,
+          ansi_color: color
+        )
+      end
     end
 
     :ok
+  end
+
+  defp log_sql_iodata("begin", _, _, _) do
+    nil
+  end
+
+  defp log_sql_iodata("commit", _, _, _) do
+    nil
   end
 
   defp log_sql_iodata(query, measurements, %{result: result, source: source}, color) do
